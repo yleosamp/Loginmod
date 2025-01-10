@@ -19,6 +19,8 @@ public class LoginEvents {
             ServerPlayer player = (ServerPlayer) event.getPlayer();
             String playerName = player.getName().getString();
             String playerIp = player.connection.connection.getRemoteAddress().toString();
+            playerIp = playerIp.substring(playerIp.indexOf("/") + 1);
+            playerIp = playerIp.substring(0, playerIp.indexOf(":"));
             
             if (PlayerData.INSTANCE.hasValidSession(playerName, playerIp)) {
                 PlayerData.INSTANCE.setLoggedIn(playerName);

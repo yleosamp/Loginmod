@@ -59,6 +59,8 @@ public class LoginCommands {
                     if (PlayerData.INSTANCE.checkPassword(playerName, senha)) {
                         PlayerData.INSTANCE.setLoggedIn(playerName);
                         String ip = player.connection.connection.getRemoteAddress().toString();
+                        ip = ip.substring(ip.indexOf("/") + 1);
+                        ip = ip.substring(0, ip.indexOf(":"));
                         PlayerData.INSTANCE.saveSession(playerName, ip);
                         player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                         player.sendMessage(new TextComponent("§a[Login] Login realizado com sucesso!"), player.getUUID());
