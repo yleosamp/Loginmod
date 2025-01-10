@@ -1,10 +1,27 @@
 modLoader="javafml"
 loaderVersion="[40,)"
 license="All rights reserved"
+issueTrackerURL="http://my.issue.tracker/"
+
 [[mods]]
 modId="loginmod"
 version="1.0.0"
 displayName="Login Mod"
+authors="loginmodsareus"
 description='''
 Um simples mod de login para servidores Minecraft
 '''
+
+[[dependencies.loginmod]]
+modId="forge"
+mandatory=true
+versionRange="[40,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.loginmod]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.18.2,1.19)"
+ordering="NONE"
+side="BOTH"

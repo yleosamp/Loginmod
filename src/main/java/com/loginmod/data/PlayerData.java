@@ -10,39 +10,39 @@ import java.util.*;
 public class PlayerData {
     public static final PlayerData INSTANCE = new PlayerData();
     
-    private Map<UUID, String> playerPasswords = new HashMap<>();
-    private Set<UUID> loggedInPlayers = new HashSet<>();
+    private Map<String, String> playerPasswords = new HashMap<>();
+    private Set<String> loggedInPlayers = new HashSet<>();
     
-    public void savePassword(UUID player, String password) {
+    public void savePassword(String playerName, String password) {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        playerPasswords.put(player, hashedPassword);
+        playerPasswords.put(playerName.toLowerCase(), hashedPassword);
         saveToFile();
     }
     
-    public boolean checkPassword(UUID player, String password) {
-        String hashedPassword = playerPasswords.get(player);
+    public boolean checkPassword(String playerName, String password) {
+        String hashedPassword = playerPasswords.get(playerName.toLowerCase());
         return hashedPassword != null && BCrypt.checkpw(password, hashedPassword);
     }
     
-    public void setLoggedIn(UUID player) {
-        loggedInPlayers.add(player);
+    public void setLoggedIn(String playerName) {
+        loggedInPlayers.add(playerName.toLowerCase());
     }
     
-    public void setLoggedOut(UUID player) {
-        loggedInPlayers.remove(player);
+    public void setLoggedOut(String playerName) {
+        loggedInPlayers.remove(playerName.toLowerCase());
     }
     
-    public boolean isLoggedIn(UUID player) {
-        return loggedInPlayers.contains(player);
+    public boolean isLoggedIn(String playerName) {
+        return loggedInPlayers.contains(playerName.toLowerCase());
     }
     
-    public boolean hasPassword(UUID player) {
-        return playerPasswords.containsKey(player);
+    public boolean hasPassword(String playerName) {
+        return playerPasswords.containsKey(playerName.toLowerCase());
     }
     
-    public void removePassword(UUID player) {
-        playerPasswords.remove(player);
-        loggedInPlayers.remove(player);
+    public void removePassword(String playerName) {
+        playerPasswords.remove(playerName.toLowerCase());
+        loggedInPlayers.remove(playerName.toLowerCase());
         saveToFile();
     }
     
@@ -50,7 +50,7 @@ public class PlayerData {
         try {
             File file = new File("player_passwords.dat");
             JsonObject json = new JsonObject();
-            playerPasswords.forEach((uuid, hash) -> json.addProperty(uuid.toString(), hash));
+            playerPasswords.forEach((name, hash) -> json.addProperty(name, hash));
             
             FileWriter writer = new FileWriter(file);
             new Gson().toJson(json, writer);
@@ -67,7 +67,7 @@ public class PlayerData {
             
             JsonObject json = new Gson().fromJson(new FileReader(file), JsonObject.class);
             json.entrySet().forEach(entry -> {
-                playerPasswords.put(UUID.fromString(entry.getKey()), entry.getValue().getAsString());
+                playerPasswords.put(entry.getKey(), entry.getValue().getAsString());
             });
         } catch (IOException e) {
             e.printStackTrace();

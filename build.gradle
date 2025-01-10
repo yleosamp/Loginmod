@@ -8,12 +8,9 @@ buildscript {
     }
 }
 
-plugins {
-    id 'eclipse'
-    id 'maven-publish'
-}
-
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 
 version = '1.0'
 group = 'com.loginmod'
@@ -23,30 +20,6 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
     mappings channel: 'official', version: '1.18.2'
-    
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                loginmod {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                loginmod {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
 }
 
 repositories {
@@ -56,7 +29,10 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
     implementation 'org.mindrot:jbcrypt:0.4'
-    implementation 'com.google.code.gson:gson:2.8.9'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 jar {
@@ -70,5 +46,13 @@ jar {
             "Implementation-Vendor" :"loginmodsareus",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.runtimeClasspath
+            .filter { it.name.contains('bcrypt') }
+            .collect { it.isDirectory() ? it : zipTree(it) }
     }
 } 

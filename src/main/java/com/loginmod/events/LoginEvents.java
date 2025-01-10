@@ -14,7 +14,8 @@ public class LoginEvents {
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getPlayer() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) event.getPlayer();
-            if (!PlayerData.INSTANCE.hasPassword(player.getUUID())) {
+            String playerName = player.getName().getString();
+            if (!PlayerData.INSTANCE.hasPassword(playerName)) {
                 player.sendMessage(new TextComponent("§6[Login] Use /register <senha> <senha> para se registrar!"), player.getUUID());
             } else {
                 player.sendMessage(new TextComponent("§6[Login] Use /login <senha> para fazer login!"), player.getUUID());
@@ -24,30 +25,28 @@ public class LoginEvents {
     
     @SubscribeEvent
     public void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        PlayerData.INSTANCE.setLoggedOut(event.getPlayer().getUUID());
+        PlayerData.INSTANCE.setLoggedOut(event.getPlayer().getName().getString());
     }
 
-    // Cancela qualquer movimento do jogador
     @SubscribeEvent
     public void onPlayerMove(LivingEvent.LivingUpdateEvent event) {
         if (event.getEntityLiving() instanceof ServerPlayer player) {
-            if (!PlayerData.INSTANCE.isLoggedIn(player.getUUID())) {
+            if (!PlayerData.INSTANCE.isLoggedIn(player.getName().getString())) {
                 player.setDeltaMovement(0, 0, 0);
             }
         }
     }
 
-    // Impede interações com o mundo
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getUUID())) {
+        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getName().getString())) {
             event.setCanceled(true);
         }
     }
     
     @SubscribeEvent
     public void onPlayerChat(ServerChatEvent event) {
-        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getUUID())) {
+        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getName().getString())) {
             if (!event.getMessage().startsWith("/login") && !event.getMessage().startsWith("/register")) {
                 event.setCanceled(true);
                 event.getPlayer().sendMessage(new TextComponent("§c[Login] Você precisa fazer login primeiro!"), event.getPlayer().getUUID());
