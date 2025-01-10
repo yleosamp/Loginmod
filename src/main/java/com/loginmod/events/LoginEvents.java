@@ -18,6 +18,13 @@ public class LoginEvents {
         if (event.getPlayer() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) event.getPlayer();
             String playerName = player.getName().getString();
+            String playerIp = player.connection.connection.getRemoteAddress().toString();
+            
+            if (PlayerData.INSTANCE.hasValidSession(playerName, playerIp)) {
+                PlayerData.INSTANCE.setLoggedIn(playerName);
+                player.sendMessage(new TextComponent("§a[Login] Login automático realizado com sucesso!"), player.getUUID());
+                return;
+            }
             
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, Integer.MAX_VALUE, 255, false, false));
             

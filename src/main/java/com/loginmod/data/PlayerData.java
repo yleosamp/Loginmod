@@ -12,6 +12,25 @@ public class PlayerData {
     
     private Map<String, String> playerPasswords = new HashMap<>();
     private Set<String> loggedInPlayers = new HashSet<>();
+    private Map<String, PlayerSession> playerSessions = new HashMap<>();
+    
+    private static class PlayerSession {
+        String ip;
+        long lastLogin;
+        
+        PlayerSession(String ip) {
+            this.ip = ip;
+            this.lastLogin = System.currentTimeMillis();
+        }
+        
+        boolean isValid(String currentIp) {
+            long currentTime = System.currentTimeMillis();
+            long oneDayInMillis = 24 * 60 * 60 * 1000;
+            
+            return ip.equals(currentIp) && 
+                   (currentTime - lastLogin) < oneDayInMillis;
+        }
+    }
     
     public void savePassword(String playerName, String password) {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
@@ -44,6 +63,23 @@ public class PlayerData {
         playerPasswords.remove(playerName.toLowerCase());
         loggedInPlayers.remove(playerName.toLowerCase());
         saveToFile();
+    }
+    
+    public void saveSession(String playerName, String ip) {
+        playerSessions.put(playerName.toLowerCase(), new PlayerSession(ip));
+    }
+    
+    public boolean hasValidSession(String playerName, String ip) {
+        PlayerSession session = playerSessions.get(playerName.toLowerCase());
+        if (session == null) return false;
+        
+        if (session.isValid(ip)) {
+            session.lastLogin = System.currentTimeMillis(); // Atualiza o tempo
+            return true;
+        } else {
+            playerSessions.remove(playerName.toLowerCase());
+            return false;
+        }
     }
     
     private void saveToFile() {
