@@ -3,18 +3,24 @@ package com.loginmod.events;
 import com.loginmod.data.PlayerData;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
 
 public class LoginEvents {
+    
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getPlayer() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) event.getPlayer();
             String playerName = player.getName().getString();
+            
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, Integer.MAX_VALUE, 255, false, false));
+            
             if (!PlayerData.INSTANCE.hasPassword(playerName)) {
                 player.sendMessage(new TextComponent("§6[Login] Use /register <senha> <senha> para se registrar!"), player.getUUID());
             } else {
@@ -25,31 +31,44 @@ public class LoginEvents {
     
     @SubscribeEvent
     public void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        PlayerData.INSTANCE.setLoggedOut(event.getPlayer().getName().getString());
+        if (event.getPlayer() instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer) event.getPlayer();
+            String playerName = player.getName().getString();
+            PlayerData.INSTANCE.setLoggedOut(playerName);
+        }
     }
 
     @SubscribeEvent
-    public void onPlayerMove(LivingEvent.LivingUpdateEvent event) {
-        if (event.getEntityLiving() instanceof ServerPlayer player) {
+    public void onItemDrop(ItemTossEvent event) {
+        if (event.getPlayer() instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer) event.getPlayer();
             if (!PlayerData.INSTANCE.isLoggedIn(player.getName().getString())) {
-                player.setDeltaMovement(0, 0, 0);
+                event.setCanceled(true);
+                player.getInventory().add(event.getEntityItem().getItem());
+                player.sendMessage(new TextComponent("§c[Login] Você precisa fazer login primeiro!"), player.getUUID());
             }
         }
     }
 
     @SubscribeEvent
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getName().getString())) {
-            event.setCanceled(true);
+    public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getPlayer() instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer) event.getPlayer();
+            if (!PlayerData.INSTANCE.isLoggedIn(player.getName().getString())) {
+                event.setUseBlock(Result.DENY);
+                event.setUseItem(Result.DENY);
+                player.sendMessage(new TextComponent("§c[Login] Você precisa fazer login primeiro!"), player.getUUID());
+            }
         }
     }
-    
+
     @SubscribeEvent
-    public void onPlayerChat(ServerChatEvent event) {
-        if (!PlayerData.INSTANCE.isLoggedIn(event.getPlayer().getName().getString())) {
-            if (!event.getMessage().startsWith("/login") && !event.getMessage().startsWith("/register")) {
+    public void onPlayerInteractItem(PlayerInteractEvent.RightClickItem event) {
+        if (event.getPlayer() instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer) event.getPlayer();
+            if (!PlayerData.INSTANCE.isLoggedIn(player.getName().getString())) {
                 event.setCanceled(true);
-                event.getPlayer().sendMessage(new TextComponent("§c[Login] Você precisa fazer login primeiro!"), event.getPlayer().getUUID());
+                player.sendMessage(new TextComponent("§c[Login] Você precisa fazer login primeiro!"), player.getUUID());
             }
         }
     }

@@ -6,6 +6,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,6 +37,7 @@ public class LoginCommands {
                     
                     PlayerData.INSTANCE.savePassword(playerName, senha);
                     PlayerData.INSTANCE.setLoggedIn(playerName);
+                    player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                     player.sendMessage(new TextComponent("§a[Login] Registro realizado com sucesso!"), player.getUUID());
                     return 1;
                 })))
@@ -56,6 +58,7 @@ public class LoginCommands {
                     
                     if (PlayerData.INSTANCE.checkPassword(playerName, senha)) {
                         PlayerData.INSTANCE.setLoggedIn(playerName);
+                        player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                         player.sendMessage(new TextComponent("§a[Login] Login realizado com sucesso!"), player.getUUID());
                         return 1;
                     } else {
