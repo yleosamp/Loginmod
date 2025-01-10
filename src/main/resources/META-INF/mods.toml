@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[40,)"
+license="All rights reserved"
+[[mods]]
+modId="loginmod"
+version="1.0.0"
+displayName="Login Mod"
+description='''
+Um simples mod de login para servidores Minecraft
+'''
